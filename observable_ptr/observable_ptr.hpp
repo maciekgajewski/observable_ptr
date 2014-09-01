@@ -8,8 +8,10 @@
 #endif
 
 #include <utility>
+#include <cassert>
 
 template<typename T> class observer_ptr;
+template<typename T> class observable_ptr;
 
 namespace detail
 {
@@ -18,11 +20,14 @@ class node
 {
 public:
 
-	const T* operator->() const { return data_; }
-	T* operator->() { return data_; }
+	const T* operator->() const { assert(data_); return data_; }
+	T* operator->() { assert(data_); return data_; }
 	operator bool() const { return data_ != nullptr; }
 
 protected:
+
+	template<typename U> friend class observer_ptr;
+	template<typename U> friend class observable_ptr;
 
 	node() = default;
 	node(const node<T>&) = delete;
@@ -40,7 +45,7 @@ protected:
 
 	void traverse_and_set(T* data)
 	{
-		for(auto n = next_; n; n = n->next_)
+		for(auto n = this->next_; n; n = n->next_)
 		{
 			n->data_ = nullptr;
 		}
@@ -95,11 +100,29 @@ public:
 		node_t::swap(o);
 	}
 
+	// Exposed for debugging
+	std::size_t observer_count() const
+	{
+		std::size_t c = 0;
+		for(auto n = this->next_; n; n = n->next_)
+		{
+			++c;
+		}
+		return c;
+	}
+
 private:
+
 	template<typename U> friend class observer_ptr;
 
 	void reset();
 };
+
+template<typename T, typename... Args>
+observable_ptr<T> make_observable_ptr(Args&& ... aa)
+{
+	return observable_ptr<T>(new T(std::forward<Args>(aa)...));
+}
 
 template<typename T>
 class observer_ptr : public detail::node<T>
@@ -121,14 +144,21 @@ public:
 		attach(o);
 	}
 
+	~observer_ptr()
+	{
+		detach();
+	}
+
 	observer_ptr<T>& operator=(const observable_ptr<T>& o)
 	{
 		attach(o);
+		return *this;
 	}
 
 	observer_ptr<T>& operator=(const observer_ptr<T>& o)
 	{
 		attach(o);
+		return *this;
 	}
 
 private:
@@ -144,6 +174,25 @@ private:
 		}
 	}
 
+	observer_ptr<T>* next() { return static_cast<observer_ptr<T>*>(this->next_); }
+
+	void detach()
+	{
+		if (this->prev_)
+		{
+			this->prev_->next_ = this->next_;
+			if (this->next_)
+			{
+				this->next()->prev_ = this->prev_;
+			}
+		}
+		else
+		{
+			assert(this->next_ == nullptr && "if prev_ is null, nexT_ must be null too");
+		}
+
+	}
+
 	template<typename U> friend class observable_ptr;
 
 	mutable node_t* prev_ = nullptr;
@@ -157,7 +206,7 @@ void observable_ptr<T>::reset()
 		delete node_t::data_;
 		node_t::data_ = nullptr;
 	}
-	node_t::traverse_and_set(nullptr);
+	this->traverse_and_set(nullptr);
 	node_t::next_ = nullptr;
 }
 
