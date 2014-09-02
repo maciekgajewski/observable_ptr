@@ -2,9 +2,7 @@
 
 # run in build directory
 
-SIZES='32 64 128 256 512 1024 2048'
-#TESTS='create_shared create_observable'
-#GNUPLOTOUT=plot.gnuplot
+SIZES='32 64 128 256 512 1024 2048 4096 8192 16384'
 GNUPLOTOUT=$1
 TESTS=$2
 REPETITIONS=10
@@ -16,7 +14,7 @@ echo "set logscale x" >> $GNUPLOTOUT
 echo "set xlabel 'number of pointers'" >> $GNUPLOTOUT
 echo "set ylabel 'time'" >> $GNUPLOTOUT
 echo "set format y ''" >> $GNUPLOTOUT
-echo "set xtics 16,2,2048" >> $GNUPLOTOUT
+echo "set xtics 16,2,16384" >> $GNUPLOTOUT
 
 echo "plot\\" >> $GNUPLOTOUT
 
