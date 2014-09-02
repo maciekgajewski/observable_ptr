@@ -179,15 +179,44 @@ struct some_observer
 	observer_ptr<some_data> data;
 };
 
-BOOST_AUTO_TEST_CASE(torture)
+BOOST_AUTO_TEST_CASE(torture_observer_from_observed)
 {
 	observable_ptr<some_data> op1 = new some_data{0};
 	std::vector<some_observer*> observers;
 
-	static const int NUM = 10000;
+	static const int NUM = 30000;
 	for(int i = 0; i < NUM; ++i)
 	{
 		observers.push_back(new some_observer{observer_ptr<some_data>(op1)});
+		observers.back()->data->counter++;
+	}
+
+	BOOST_REQUIRE_EQUAL(op1->counter, NUM);
+	BOOST_REQUIRE_EQUAL(op1.observer_count(), NUM);
+
+	// now delete them one by one
+	for(int i = 0; i < NUM; ++i)
+	{
+		observers[i]->data->counter --;
+		delete observers[i];
+		BOOST_REQUIRE_EQUAL(op1->counter, NUM-1-i);
+		BOOST_REQUIRE_EQUAL(op1.observer_count(), NUM-1-i);
+	}
+
+}
+
+BOOST_AUTO_TEST_CASE(torture_observer_from_observer)
+{
+	observable_ptr<some_data> op1 = new some_data{0};
+	std::vector<some_observer*> observers;
+
+	static const int NUM = 30000;
+	// create the first one from observent, and the subsequent ones from observers
+	observers.push_back(new some_observer{observer_ptr<some_data>(op1)});
+	observers.back()->data->counter++;
+	for(int i = 1; i < NUM; ++i)
+	{
+		observers.push_back(new some_observer{observer_ptr<some_data>(observers.back()->data)});
 		observers.back()->data->counter++;
 	}
 

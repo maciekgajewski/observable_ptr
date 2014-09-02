@@ -134,12 +134,12 @@ public:
 	{
 	}
 
-	observer_ptr(const observable_ptr<T>& o)
+	observer_ptr(const observable_ptr<T>& o) : observer_ptr()
 	{
 		attach(o);
 	}
 
-	observer_ptr(const observer_ptr<T>& o)
+	observer_ptr(const observer_ptr<T>& o) : observer_ptr()
 	{
 		attach(o);
 	}
@@ -169,28 +169,40 @@ private:
 		this->data_ = o.data_;
 		if (o.data_)
 		{
+			this->next_ = o.next_;
 			o.next_ = this;
 			this->prev_ = (node_t*)&o;
+
+			assert(this->prev_->next_ == this);
+			if (this->next_)
+			{
+				this->next()->prev_ = this;
+			}
 		}
 	}
 
-	observer_ptr<T>* next() { return static_cast<observer_ptr<T>*>(this->next_); }
+	constexpr observer_ptr<T>* next() { return static_cast<observer_ptr<T>*>(this->next_); }
 
 	void detach()
 	{
-		if (this->prev_)
+		if (this->data_)
 		{
-			this->prev_->next_ = this->next_;
-			if (this->next_)
+			if (this->prev_)
 			{
-				this->next()->prev_ = this->prev_;
+				assert(this->prev_->next_ == this);
+
+				this->prev_->next_ = this->next_;
+				if (this->next_)
+				{
+					assert(this->next()->prev_ == this);
+					this->next()->prev_ = this->prev_;
+				}
+			}
+			else
+			{
+				assert(this->next_ == nullptr && "if prev_ is null, nexT_ must be null too");
 			}
 		}
-		else
-		{
-			assert(this->next_ == nullptr && "if prev_ is null, nexT_ must be null too");
-		}
-
 	}
 
 	template<typename U> friend class observable_ptr;
