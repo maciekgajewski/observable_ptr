@@ -10,7 +10,7 @@ add_executable(test
 )
 
 target_link_libraries(test
-
+	observable_ptr
 	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 
