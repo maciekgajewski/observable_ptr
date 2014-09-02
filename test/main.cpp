@@ -131,9 +131,9 @@ struct s2
 	int y;
 };
 
-BOOST_AUTO_TEST_CASE(make_observable)
+BOOST_AUTO_TEST_CASE(make_observable_test)
 {
-	observable_ptr<s2> op1 = make_observable_ptr<s2>(44, 2);
+	observable_ptr<s2> op1 = make_observable<s2>(44, 2);
 	BOOST_REQUIRE_EQUAL(op1, true);
 	BOOST_REQUIRE_EQUAL(op1->x, 44);
 	BOOST_REQUIRE_EQUAL(op1->y, 2);
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(observers_survives_observable)
 	BOOST_REQUIRE_EQUAL(w1, false);
 
 	{
-		observable_ptr<s2> op1 = make_observable_ptr<s2>(44, 2);
+		observable_ptr<s2> op1 = make_observable<s2>(44, 2);
 		w1 = op1;
 
 		BOOST_REQUIRE_EQUAL(w1, true);
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(observers_survives_observable)
 
 BOOST_AUTO_TEST_CASE(observable_survives_observer)
 {
-	observable_ptr<s2> op1 = make_observable_ptr<s2>(6, 7);
+	observable_ptr<s2> op1 = make_observable<s2>(6, 7);
 	{
 		observer_ptr<s2> w1 = op1;
 

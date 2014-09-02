@@ -19,17 +19,16 @@ void run_becnhmark(std::size_t size)
 	std::vector<duration> nulls;
 	std::vector<duration> measurements;
 
-	nulls.reserve(size);
-	measurements.reserve(size);
-
-	Benchmark benchmark(size);
+	nulls.reserve(REPETITIONS);
+	measurements.reserve(REPETITIONS);
 
 	for(std::size_t r = 0; r < REPETITIONS; r++)
 	{
+		Benchmark benchmark(size);
 		auto start = clock::now();
 		for(std::size_t i = 0; i < size; i++)
 		{
-			benchmark.null();
+			benchmark.null(i);
 		}
 		auto end = clock::now();
 		nulls.push_back(start-end);
@@ -37,13 +36,20 @@ void run_becnhmark(std::size_t size)
 
 	for(std::size_t r = 0; r < REPETITIONS; r++)
 	{
+		Benchmark benchmark(size);
 		auto start = clock::now();
 		for(std::size_t i = 0; i < size; i++)
 		{
-			benchmark.action();
+			benchmark.action(i);
 		}
 		auto end = clock::now();
 		measurements.push_back(start-end);
+
+		if (!benchmark.verify())
+		{
+			std::cerr << "Verification of benchmark " << typeid(Benchmark).name() << " " << size << " failed!" << std::endl;
+			std::abort();
+		}
 	}
 
 	std::sort(nulls.begin(), nulls.end());
@@ -78,6 +84,14 @@ int main(int argc, char** argv)
 	else if (type == "create_shared")
 	{
 		run_becnhmark<create_shared>(size);
+	}
+	else if (type == "read_shared")
+	{
+		run_becnhmark<read_shared>(size);
+	}
+	else if (type == "read_observable")
+	{
+		run_becnhmark<read_observable>(size);
 	}
 }
 

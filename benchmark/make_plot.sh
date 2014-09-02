@@ -3,10 +3,13 @@
 # run in build directory
 
 SIZES='32 64 128 256 512 1024 2048'
-TESTS='create_shared create_observable'
+#TESTS='create_shared create_observable'
+#GNUPLOTOUT=plot.gnuplot
+GNUPLOTOUT=$1
+TESTS=$2
 REPETITIONS=10
-GNUPLOTOUT=plot.gnuplot
 
+echo "Generating $GNUPLOTOUT..."
 rm -f $GNUPLOTOUT
 
 echo "set logscale x" >> $GNUPLOTOUT

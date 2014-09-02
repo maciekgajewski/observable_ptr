@@ -119,7 +119,7 @@ private:
 };
 
 template<typename T, typename... Args>
-observable_ptr<T> make_observable_ptr(Args&& ... aa)
+observable_ptr<T> make_observable(Args&& ... aa)
 {
 	return observable_ptr<T>(new T(std::forward<Args>(aa)...));
 }
