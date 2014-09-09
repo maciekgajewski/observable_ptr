@@ -8,7 +8,7 @@
 
 
 
-static constexpr std::size_t REPETITIONS = 1000;
+static constexpr std::size_t SERIES = 1000;
 
 template<typename Benchmark>
 void run_becnhmark(std::size_t size)
@@ -19,28 +19,34 @@ void run_becnhmark(std::size_t size)
 	std::vector<duration> nulls;
 	std::vector<duration> measurements;
 
-	nulls.reserve(REPETITIONS);
-	measurements.reserve(REPETITIONS);
+	nulls.reserve(SERIES);
+	measurements.reserve(SERIES);
 
-	for(std::size_t r = 0; r < REPETITIONS; r++)
+	for(std::size_t r = 0; r < SERIES; r++)
 	{
 		Benchmark benchmark(size);
 		auto start = clock::now();
 		for(std::size_t i = 0; i < size; i++)
 		{
-			benchmark.null(i);
+			for(std::size_t r = 0; r < Benchmark::REPETITIONS; r++)
+			{
+				benchmark.null(i);
+			}
 		}
 		auto end = clock::now();
 		nulls.push_back(start-end);
 	}
 
-	for(std::size_t r = 0; r < REPETITIONS; r++)
+	for(std::size_t r = 0; r < SERIES; r++)
 	{
 		Benchmark benchmark(size);
 		auto start = clock::now();
 		for(std::size_t i = 0; i < size; i++)
 		{
-			benchmark.action(i);
+			for(std::size_t r = 0; r < Benchmark::REPETITIONS; r++)
+			{
+				benchmark.action(i);
+			}
 		}
 		auto end = clock::now();
 		measurements.push_back(start-end);
@@ -55,7 +61,7 @@ void run_becnhmark(std::size_t size)
 	std::sort(nulls.begin(), nulls.end());
 	std::sort(measurements.begin(), measurements.end());
 
-	duration median_corrected = measurements[REPETITIONS/2] - nulls[0];
+	duration median_corrected = measurements[SERIES/2] - nulls[0];
 	duration min_corrected = measurements[0] - nulls[0];
 
 
@@ -92,6 +98,14 @@ int main(int argc, char** argv)
 	else if (type == "read_observable")
 	{
 		run_becnhmark<read_observable>(size);
+	}
+	else if (type == "read_weak")
+	{
+		run_becnhmark<read_weak>(size);
+	}
+	else if (type == "read_observer")
+	{
+		run_becnhmark<read_observer>(size);
 	}
 }
 

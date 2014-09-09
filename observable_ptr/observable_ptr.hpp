@@ -39,8 +39,20 @@ protected:
 
 	void swap(node& o)
 	{
+		observer_ptr<T>* observer = dynamic_cast<observer_ptr<T>*>(next_);
+		if (observer)
+		{
+			observer->prev_ = &o;
+		}
+		observer_ptr<T>* o_observer = dynamic_cast<observer_ptr<T>*>(o.next_);
+		if (o_observer)
+		{
+			o_observer->prev_ = this;
+		}
+
 		std::swap(data_, o.data_);
 		std::swap(next_, o.next_);
+
 	}
 
 	void traverse_and_set(T* data)
@@ -129,6 +141,9 @@ class observer_ptr : public detail::node<T>
 {
 	using observer_t = observer_ptr<T>;
 	using node_t = detail::node<T>;
+
+	template<typename U> friend class detail::node;
+
 public:
 	observer_ptr()
 	{

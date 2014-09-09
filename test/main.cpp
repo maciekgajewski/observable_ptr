@@ -231,6 +231,18 @@ BOOST_AUTO_TEST_CASE(torture_observer_from_observer)
 		BOOST_REQUIRE_EQUAL(op1->counter, NUM-1-i);
 		BOOST_REQUIRE_EQUAL(op1.observer_count(), NUM-1-i);
 	}
+}
 
+BOOST_AUTO_TEST_CASE(vector_storage)
+{
+	std::vector<observable_ptr<some_data>> observables;
+	std::vector<observer_ptr<some_data>> observers;
+
+	for (int i = 0; i < 2; i++)
+	{
+		observables.emplace_back(make_observable<some_data>());
+		observables.back()->counter = i;
+		observers.emplace_back(observables.back());
+	}
 }
 
